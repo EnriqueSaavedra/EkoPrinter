@@ -26,6 +26,8 @@ public final class EkoPrinter<T extends DTO>{
     
     
     public EkoPrinter(List<T> lst, ConfPrinter conf){
+        
+        
         /**
          * 1- Recorrer DTO
          * 2- Armar un objeto solo con los campos del DTO
