@@ -6,6 +6,7 @@
 package cl.ekomaiko.ekoprinter;
 
 import cl.ekomaiko.ekoprinter.elements.ConfPrinter;
+import cl.ekomaiko.ekoprinter.elements.EkoPrinter;
 import cl.ekomaiko.ekoprinter.interfaces.DTO;
 import cl.ekomaiko.ekoprinter.test.DiasTrabajadosPlanillasDTO;
 import cl.ekomaiko.ekoprinter.test.PlanillaDetalleDTO;
@@ -47,6 +48,7 @@ public class Test {
     
     
     public static void main(String...args) throws Exception{
+        List<DiasTrabajadosPlanillasDTO> lst = simularDatos();
         ConfPrinter conf = new ConfPrinter.ConfPrinterBuilder()
                                 .addTitle("Titulo1", "idMaquina", 0)
                                 .addTitle("Titulo2", "cupoMaquina", 1)
@@ -59,7 +61,7 @@ public class Test {
                                             .build()
                                 );
         
-        
+        EkoPrinter printer = new EkoPrinter(lst, conf);
         
         
     }

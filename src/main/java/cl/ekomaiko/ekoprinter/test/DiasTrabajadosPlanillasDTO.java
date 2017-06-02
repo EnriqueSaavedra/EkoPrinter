@@ -6,6 +6,7 @@
 package cl.ekomaiko.ekoprinter.test;
 
 import cl.ekomaiko.ekoprinter.elements.EkoPrinter;
+import cl.ekomaiko.ekoprinter.exceptions.DTOException;
 import cl.ekomaiko.ekoprinter.interfaces.DTO;
 import java.util.ArrayList;
 import java.util.List;
@@ -55,6 +56,21 @@ public class DiasTrabajadosPlanillasDTO implements DTO{
 
     public void addDetalle(PlanillaDetalleDTO detalle){
         this.detalle.add(detalle);
+    }
+
+    @Override
+    public boolean verify() throws DTOException {
+        return (
+                allowedType(this.idMaquina) &&
+                allowedType(this.cupoMaquina) &&
+                allowedType(this.patenteMaquina) &&
+                allowedType(this.detalle) 
+            );
+    }
+
+    @Override
+    public List<? extends DTO> getDTOList() {
+        return this.detalle;
     }
     
 }

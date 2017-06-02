@@ -6,7 +6,9 @@
 package cl.ekomaiko.ekoprinter.test;
 
 import cl.ekomaiko.ekoprinter.elements.EkoPrinter;
+import cl.ekomaiko.ekoprinter.exceptions.DTOException;
 import cl.ekomaiko.ekoprinter.interfaces.DTO;
+import java.util.List;
 
 /**
  *  
@@ -53,4 +55,19 @@ public class PlanillaDetalleDTO implements DTO{
     public void setPlanillasPagadasDia(String planillasPagadasDia) {
         this.planillasPagadasDia = planillasPagadasDia;
     }
+
+    @Override
+    public boolean verify() throws DTOException {
+        return (
+                allowedType(this.fecha) &&
+                allowedType(this.trabajo) &&
+                allowedType(this.planillasPagadasDia)
+            );
+    }
+
+    @Override
+    public List<? extends DTO> getDTOList() {
+        return null;
+    }
+    
 }
