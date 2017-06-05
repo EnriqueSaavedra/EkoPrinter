@@ -10,13 +10,19 @@ import cl.ekomaiko.ekoprinter.elements.EkoPrinter;
 import cl.ekomaiko.ekoprinter.interfaces.DTO;
 import cl.ekomaiko.ekoprinter.test.DiasTrabajadosPlanillasDTO;
 import cl.ekomaiko.ekoprinter.test.PlanillaDetalleDTO;
+import java.io.ByteArrayOutputStream;
+import java.io.FileOutputStream;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.text.DateFormat;
 import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
+import org.joda.time.DateTime;
+import org.joda.time.format.DateTimeFormat;
 
 /**
  *
@@ -27,14 +33,14 @@ public class Test {
     
     public static List<DiasTrabajadosPlanillasDTO> simularDatos(){
         List<DiasTrabajadosPlanillasDTO> lst = new ArrayList<>();
-        for (int i = 0; i < 10; i++) {
+        for (int i = 0; i < 2; i++) {
             DiasTrabajadosPlanillasDTO planilla = new DiasTrabajadosPlanillasDTO();
             planilla.setCupoMaquina("cupo "+i);
             planilla.setIdMaquina("idMaquina "+i);
-            planilla.setPatenteMaquina("detalle: "+i);
-            for (int j = 0; j < 2; j++) {
+            planilla.setPatenteMaquina("patente: "+i);
+            for (int j = 0; j < 5; j++) {
                 PlanillaDetalleDTO det = new PlanillaDetalleDTO();
-                det.setFecha(LocalTime.now().toString());
+                det.setFecha(DateTimeFormat.forPattern("dd/MM/yyyy").print(new DateTime()));
                 det.setPlanillasPagadasDia("planillas "+j);
                 det.setTrabajo("trabajo "+j);
                 planilla.addDetalle(det);
@@ -50,20 +56,20 @@ public class Test {
     public static void main(String...args) throws Exception{
         List<DiasTrabajadosPlanillasDTO> lst = simularDatos();
         ConfPrinter conf = new ConfPrinter.ConfPrinterBuilder()
-                                .addTitle("Titulo1", "idMaquina", 0)
+                                    .addTitle("Titulo1", "idMaquina", 0)
                                 .addTitle("Titulo2", "cupoMaquina", 1)
                                 .addTitle("Titulo3", "patenteMaquina", 2)
                                 .build(
                                         new ConfPrinter.ConfPrinterBuilder()
-                                            .addTitle("SubTitu1", "fecha", 0)
+                                            .addTitle("SubTitu1", "planillasPagadasDia", 0)
                                             .addTitle("SubTitu2", "trabajo", 1)
-                                            .addTitle("SubTitu3", "planillasPagadasDia", 2)
+                                            .addTitle("SubTitu3", "fecha", 2)
                                             .build()
                                 );
         
         EkoPrinter printer = new EkoPrinter(lst, conf);
-        
-        
+        ByteArrayOutputStream baos = printer.toPDF("Este es un doc de prueba");
+        baos.writeTo(new FileOutputStream("/home/enrique/testPdf.pdf"));
     }
     
     

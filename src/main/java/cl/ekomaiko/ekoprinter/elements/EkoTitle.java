@@ -33,9 +33,9 @@ public class EkoTitle implements Comparable<EkoTitle>{
     @Override
     public int compareTo(EkoTitle o) { 
         if(this.position > o.getPosition()){
-            return -1;
-        }else if(this.position < o.getPosition()){
             return 1;
+        }else if(this.position < o.getPosition()){
+            return -1;
         }else{
             return 0;
         }

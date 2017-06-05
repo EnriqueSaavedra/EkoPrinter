@@ -18,6 +18,8 @@ import java.util.List;
  */
 public final class ConfPrinter {
     private final List<EkoTitle> titles;
+    int totalCells = 0;
+    int mergerCells = 1;
     private final ConfPrinter subConf;
     
     private ConfPrinter(ConfPrinterBuilder builder){
