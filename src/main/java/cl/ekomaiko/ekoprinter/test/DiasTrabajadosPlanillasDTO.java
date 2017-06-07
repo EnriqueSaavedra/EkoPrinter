@@ -19,40 +19,10 @@ public class DiasTrabajadosPlanillasDTO implements DTO{
     public String idMaquina;
     public String cupoMaquina;
     public String patenteMaquina;
+    public String chofer;
+    public String total;
     public List<PlanillaDetalleDTO> detalle = new ArrayList<PlanillaDetalleDTO>();
 
-
-    public String getIdMaquina() {
-        return idMaquina;
-    }
-
-    public void setIdMaquina(String idMaquina) {
-        this.idMaquina = idMaquina;
-    }
-
-    public List<PlanillaDetalleDTO> getDetalle() {
-        return detalle;
-    }
-
-    public void setDetalle(List<PlanillaDetalleDTO> detalle) {
-        this.detalle = detalle;
-    }
-
-    public String getPatenteMaquina() {
-        return patenteMaquina;
-    }
-
-    public void setPatenteMaquina(String patenteMaquina) {
-        this.patenteMaquina = patenteMaquina;
-    }
-
-    public String getCupoMaquina() {
-        return cupoMaquina;
-    }
-
-    public void setCupoMaquina(String cupoMaquina) {
-        this.cupoMaquina = cupoMaquina;
-    }
 
     public void addDetalle(PlanillaDetalleDTO detalle){
         this.detalle.add(detalle);

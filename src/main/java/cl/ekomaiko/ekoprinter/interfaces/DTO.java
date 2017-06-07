@@ -22,7 +22,7 @@ public interface DTO {
      * @throws DTOException 
      */
     boolean verify() throws DTOException;
-    default boolean  allowedType(Object elemento){
+    default boolean allowedType(Object elemento){
         boolean result = false;
         if(elemento == null)
             return true;

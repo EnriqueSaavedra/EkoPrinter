@@ -6,6 +6,7 @@
 package cl.ekomaiko.ekoprinter.elements;
 
 import cl.ekomaiko.ekoprinter.enums.DisplayTypes;
+import cl.ekomaiko.ekoprinter.exceptions.ConfPrinterException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedList;
@@ -17,9 +18,8 @@ import java.util.List;
  * @author enrique
  */
 public final class ConfPrinter {
-    private final List<EkoTitle> titles;
+    private final List<? extends EkoTitle> titles;
     int totalCells = 0;
-    int mergerCells = 1;
     private final ConfPrinter subConf;
     
     private ConfPrinter(ConfPrinterBuilder builder){
@@ -40,7 +40,7 @@ public final class ConfPrinter {
         return strBuilder.toString();
     }
 
-    public List<EkoTitle> getTitles() {
+    public List<? extends EkoTitle> getTitles() {
         return titles;
     }
 
@@ -57,7 +57,7 @@ public final class ConfPrinter {
      */
     public static class ConfPrinterBuilder{
         
-        private List<EkoTitle> titles = new ArrayList<>();
+        private List<EkoTitle> titles = new ArrayList<EkoTitle>();
         private ConfPrinter subConf;
         
     
@@ -65,16 +65,35 @@ public final class ConfPrinter {
 
         }
    
-        public ConfPrinterBuilder addTitle(String title, String fieldName, int position,DisplayTypes type){
-            EkoTitle titleObj = new EkoTitle(title, fieldName, position,type);
-            titles.add(titleObj);
+        public ConfPrinterBuilder addTitle(String title, int position,DisplayTypes type,String...fieldName) throws ConfPrinterException{
+            if(fieldName.length == 0)
+                throw new ConfPrinterException("Titulo no entregado.");
+            
+            if(fieldName.length > 1){
+                MultiTitle titleObj = new MultiTitle(title, position,type, fieldName);
+                titles.add(titleObj);
+            }else{
+                SimpleTitle titleObj = new SimpleTitle(title, position,type, fieldName[0]);
+                titles.add(titleObj);
+            }
             return this;
         }
 
-        public ConfPrinterBuilder addTitle(String title, String fieldName, int position){
-            EkoTitle titleObj = new EkoTitle(title, fieldName, position);
-            titles.add(titleObj);
+        public ConfPrinterBuilder addTitle(String title, int position,String...fieldName) throws ConfPrinterException{
+            if(fieldName.length == 0)
+                throw new ConfPrinterException("Titulo no entregado.");
+            
+            if(fieldName.length > 1){
+                MultiTitle titleObj = new MultiTitle(title, position, fieldName);
+                titles.add(titleObj);
+            }else{
+                SimpleTitle titleObj = new SimpleTitle(title, position, fieldName[0]);
+                titles.add(titleObj);
+            }
             return this;
+//            EkoTitle titleObj = new SimpleTitle(title, position, fieldName);
+//            titles.add(titleObj);
+//            return this;
         }
         
         public ConfPrinter build(){

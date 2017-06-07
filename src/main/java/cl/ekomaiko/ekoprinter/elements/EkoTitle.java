@@ -11,22 +11,22 @@ import cl.ekomaiko.ekoprinter.enums.DisplayTypes;
  *
  * @author enrique
  */
-public class EkoTitle implements Comparable<EkoTitle>{
+public abstract class EkoTitle implements Comparable<EkoTitle>{
     private final String title;
-    private final String fieldName;
     private final int position;
     private DisplayTypes type;
+    public int mergerCells = 1;
     
+    public abstract String toString();
     
-     public EkoTitle(String title,String fieldName, int position){
+    EkoTitle(String title, int position){
         this.title = title;
-        this.fieldName = fieldName;
         this.position = position;
         type = DisplayTypes.PLAIN_TEXT;
      }
     
-    public EkoTitle(String title,String fieldName, int position,DisplayTypes type){
-        this(title, fieldName, position);
+    EkoTitle(String title, int position,DisplayTypes type){
+        this(title, position);
         this.type = type;
     }
 
@@ -40,13 +40,10 @@ public class EkoTitle implements Comparable<EkoTitle>{
             return 0;
         }
     }
+    
 
     public String getTitle() {
         return title;
-    }
-
-    public String getFieldName() {
-        return fieldName;
     }
 
     public int getPosition() {
@@ -59,14 +56,5 @@ public class EkoTitle implements Comparable<EkoTitle>{
 
     public void setType(DisplayTypes type) {
         this.type = type;
-    }    
-
-    @Override
-    public String toString() {
-        return "Title: "+title +
-               "\n FieldName: "+fieldName+
-               "\n Position: "+position+"\n";
-    }
-    
-    
+    }     
 }

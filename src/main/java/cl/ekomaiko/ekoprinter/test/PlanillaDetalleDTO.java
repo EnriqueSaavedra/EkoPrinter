@@ -8,6 +8,8 @@ package cl.ekomaiko.ekoprinter.test;
 import cl.ekomaiko.ekoprinter.elements.EkoPrinter;
 import cl.ekomaiko.ekoprinter.exceptions.DTOException;
 import cl.ekomaiko.ekoprinter.interfaces.DTO;
+import com.sun.javafx.scene.control.skin.VirtualFlow;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -21,19 +23,13 @@ public class PlanillaDetalleDTO implements DTO{
 
     public String fecha;
     public String trabajo;
+    public String noTrabajo;
+    public String montoTotal;
+    public String tiempoTotal;
+    public String empresario;
+    public String fechaSalida;
     public String planillasPagadasDia;
-
-    public String getFecha() {
-        return fecha;
-    }
-
-    public void setFecha(String fecha) {
-        this.fecha = fecha;
-    }
-
-    public String getTrabajo() {
-        return trabajo;
-    }
+    public List<SubDetalleDTO> subDetalle = new ArrayList<SubDetalleDTO>();
 
     public String getTextTrabajo(){
         if(this.trabajo.equals(TRABAJADO))
@@ -44,30 +40,31 @@ public class PlanillaDetalleDTO implements DTO{
             return "-";
     }
 
+    public void addSubDetalle(SubDetalleDTO subDetalle){
+        this.subDetalle.add(subDetalle);
+    }
+    
     public void setTrabajo(String trabajo) {
         this.trabajo = trabajo;
     }
-
-    public String getPlanillasPagadasDia() {
-        return (planillasPagadasDia.equals("0") ? "-" : planillasPagadasDia);
-    }
-
-    public void setPlanillasPagadasDia(String planillasPagadasDia) {
-        this.planillasPagadasDia = planillasPagadasDia;
-    }
-
+    
     @Override
     public boolean verify() throws DTOException {
         return (
                 allowedType(this.fecha) &&
                 allowedType(this.trabajo) &&
+                allowedType(this.noTrabajo) &&
+                allowedType(this.montoTotal) &&
+                allowedType(this.tiempoTotal) &&
+                allowedType(this.empresario) &&
+                allowedType(this.fechaSalida) &&
                 allowedType(this.planillasPagadasDia)
             );
     }
 
     @Override
     public List<? extends DTO> getDTOList() {
-        return null;
+        return subDetalle;
     }
     
 }

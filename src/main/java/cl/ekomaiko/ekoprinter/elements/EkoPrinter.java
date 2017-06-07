@@ -23,11 +23,7 @@ import com.itextpdf.text.pdf.PdfWriter;
 import java.io.ByteArrayOutputStream;
 import static java.lang.System.exit;
 import java.lang.reflect.Field;
-import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -47,8 +43,16 @@ public final class EkoPrinter{
     
     private final List<? extends DTO> currentList;
     private final ConfPrinter currentConf;
-    private Font fuenteDatos = new Font(Font.FontFamily.TIMES_ROMAN, 8);
+    private int maxCellSize = 0;
     
+    
+    private static Font fuenteDatos = new Font(Font.FontFamily.TIMES_ROMAN, 8);
+    private static PdfPCell CELL_NULL = new PdfPCell(new Paragraph("", fuenteDatos));
+    
+    static{
+        //init de datos
+        CELL_NULL.setBackgroundColor(new BaseColor(249, 249, 249));
+    }
     /**
      * El constructor solo debería verificar que todo está en orden
      * @param lst
@@ -60,7 +64,8 @@ public final class EkoPrinter{
         //verifica que todos los datos que tengan los DTOs sean los aceptados
         this.verifyAllDTO(lst);
         this.verifyAllConfFieldsNames(lst,conf);
-        this.getTotalCells(conf);
+        this.searchMaximunCellSize(conf,0);
+        this.getTotalCells(conf,this.maxCellSize);
         
         this.currentList = lst;
         this.currentConf = conf;
@@ -80,17 +85,36 @@ public final class EkoPrinter{
          
     }
     
-    private int getTotalCells(ConfPrinter conf){
-        int countCells = 0;
+    
+    private void searchMaximunCellSize(ConfPrinter conf,int nivel){
+        int titleSize = conf.getTitles().size();
+        this.maxCellSize = (this.maxCellSize < titleSize) ? (titleSize+nivel) : this.maxCellSize;
         if(conf.getSubConf() != null){
-            countCells = this.getTotalCells(conf.getSubConf()) * 2;
-            
-        }else{
-            countCells = conf.getTitles().size();
+            this.searchMaximunCellSize(conf.getSubConf(),++nivel);
         }
-        conf.totalCells = countCells;
-        conf.mergerCells = (countCells/conf.getTitles().size());
-        return countCells;
+    }
+    
+    //se deberia llamar conf
+    private void getTotalCells(ConfPrinter conf, int maxCell){
+        int titleSize = conf.getTitles().size();
+        int merge = maxCell / titleSize;
+        conf.totalCells = maxCell;
+        int mod = maxCell % titleSize;
+        if(mod != 0){
+            for (int i = 0; i < titleSize;i++) {
+                EkoTitle title = conf.getTitles().get(i);
+                title.mergerCells = merge;
+            }
+            int cont = 0;
+            while(mod-- > 0) conf.getTitles().get(titleSize-(++cont)).mergerCells++;
+        }else{
+            for (EkoTitle title : conf.getTitles()) {
+                title.mergerCells = merge;
+            }
+        }
+        if(conf.getSubConf() != null){
+            this.getTotalCells(conf.getSubConf(),--maxCell);
+        }
     }
     
     private void verifyAllDTO(List<? extends DTO> listDTO) throws DTOException, EkoPrinterException{
@@ -120,12 +144,18 @@ public final class EkoPrinter{
         try {
             if(listDTO.size() <= 0 )
                 throw new EkoPrinterException("La lista DTO es vacía");
-            
             DTO dto = listDTO.get(0);
-            List<EkoTitle> titles = conf.getTitles();
+            List<? extends EkoTitle> titles = conf.getTitles();
             Class claseDTO =  dto.getClass();
             for (EkoTitle title : titles) {
-                claseDTO.getField(title.getFieldName());
+                if(title instanceof SimpleTitle)
+                    claseDTO.getField(((SimpleTitle)title).getFieldName());
+                else if(title instanceof MultiTitle){
+                    MultiTitle multiTitle = (MultiTitle) title;
+                    for(String field : multiTitle.getFieldName()){
+                        claseDTO.getField(field);
+                    }
+                }
             }
             if(conf.getSubConf() != null){
                 verifyAllConfFieldsNames(dto.getDTOList(),conf.getSubConf());
@@ -136,10 +166,11 @@ public final class EkoPrinter{
         }catch (Exception e) {
             Class clase = listDTO.get(0).getClass();
             Field[] campos = clase.getFields();
-            System.out.println("Exe");
+            System.out.println("Exception");
             for (Field campo : campos) {
                 System.out.println(campo.getName());
             }
+            e.printStackTrace();
         }
     }
     
@@ -176,8 +207,6 @@ public final class EkoPrinter{
             tabla.setWidthPercentage(100);
             tabla.setWidths(medidasCeldas);
             
-            PdfPCell cellNull = new PdfPCell(new Paragraph("", fuenteDatos));
-            cellNull.setBackgroundColor(BaseColor.LIGHT_GRAY);
             this.iterateListConf(tabla, currentList, currentConf); //itera
             document.add(tabla);
             document.close();
@@ -199,37 +228,59 @@ public final class EkoPrinter{
     }
     
     private void iterateListConf(PdfPTable table, List<? extends DTO> actualList, ConfPrinter actualConf) throws NoSuchFieldException, IllegalArgumentException, IllegalArgumentException, IllegalAccessException{
+        
+        this.rellenarEspacios(table, this.maxCellSize, actualConf.totalCells);
         for (EkoTitle title : actualConf.getTitles()) {
             PdfPCell cell = new PdfPCell((new Paragraph(title.getTitle(),fuenteDatos)));
             cell.setBackgroundColor(BaseColor.LIGHT_GRAY);
             cell.setHorizontalAlignment(Element.ALIGN_CENTER);
-            cell.setColspan(actualConf.mergerCells);
+            //rellenar con nulos
+            cell.setColspan(title.mergerCells);
             table.addCell(cell);
         }
         for (DTO dto : actualList) {
+            this.rellenarEspacios(table, this.maxCellSize, actualConf.totalCells);
+            
+            /**
+             * dtoTitle debería verificar si es de tipo simpletitle o multititle
+             * debería agregar un string de glue para pegar los fields,
+             * luego iterar y subiterar los fieldnames
+             * agregar que soporte formato de campos
+             * agregar totalizador y subtotalizador
+             */
             EkoTitle dtoTitle;        
             Iterator titlePos = actualConf.getTitles().iterator();
             while(titlePos.hasNext()){
                 dtoTitle = (EkoTitle) titlePos.next();
                 Field field = dto.getClass().getField(dtoTitle.getFieldName());
-                Object value = field.get(dto);
-                PdfPCell cellCurrentField =new PdfPCell(new Paragraph(String.valueOf(value), fuenteDatos));
+                if(dtoTitle instanceof SimpleTitle){
+                    Object value = field.get(dto);
+                    PdfPCell cellCurrentField =new PdfPCell(new Paragraph(String.valueOf(value), fuenteDatos));
+                }
+                
                 cellCurrentField.setHorizontalAlignment(Element.ALIGN_CENTER);
-                cellCurrentField.setColspan(actualConf.mergerCells);
+                cellCurrentField.setColspan(dtoTitle.mergerCells);
                 table.addCell(cellCurrentField);
             }
-            if(dto.getDTOList() != null && this.currentConf.getSubConf() != null){
-                iterateListConf(table, dto.getDTOList(), this.currentConf.getSubConf());
+            if(dto.getDTOList() != null && actualConf.getSubConf() != null){
+                iterateListConf(table, dto.getDTOList(), actualConf.getSubConf());
                 if( actualList.indexOf(dto) < (actualList.size()-1) ){
+                this.rellenarEspacios(table, this.maxCellSize, actualConf.totalCells);
                     for (EkoTitle title : actualConf.getTitles()) {
                         PdfPCell cell = new PdfPCell((new Paragraph(title.getTitle(),fuenteDatos)));
                         cell.setBackgroundColor(BaseColor.LIGHT_GRAY);
                         cell.setHorizontalAlignment(Element.ALIGN_CENTER);
-                        cell.setColspan(actualConf.mergerCells);
+                        cell.setColspan(title.mergerCells);
                         table.addCell(cell);
                     }
                 }
             }
+        }
+    }
+    
+    private void rellenarEspacios(PdfPTable table,int totalCellsPadre, int totalCurrentCells){
+        for (; totalCurrentCells < totalCellsPadre; totalCurrentCells++) {
+            table.addCell(CELL_NULL);
         }
     }
     
