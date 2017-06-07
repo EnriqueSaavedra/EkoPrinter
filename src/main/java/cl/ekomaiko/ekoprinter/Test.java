@@ -12,13 +12,8 @@ import cl.ekomaiko.ekoprinter.test.DiasTrabajadosPlanillasDTO;
 import cl.ekomaiko.ekoprinter.test.PlanillaDetalleDTO;
 import java.io.ByteArrayOutputStream;
 import java.io.FileOutputStream;
-import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
-import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
-import java.text.DateFormat;
-import java.time.LocalTime;
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import org.joda.time.DateTime;
@@ -70,6 +65,9 @@ public class Test {
         EkoPrinter printer = new EkoPrinter(lst, conf);
         ByteArrayOutputStream baos = printer.toPDF("Este es un doc de prueba");
         baos.writeTo(new FileOutputStream("/home/enrique/testPdf.pdf"));
+        List<? extends Number> lista = new ArrayList<Integer>();
+        
+//        getListData();
     }
     
     
@@ -78,7 +76,7 @@ public class Test {
             throw new Exception("Lista vacia");
         
         Object obj = lst.get(0);
-        Class<?> clase = lst.get(0).getClass();
+        Class clase = lst.get(0).getClass();
         Field[] campos = clase.getFields();
         System.out.println("campos de "+clase.getName()+": ");
         for (Field campo : campos) {
@@ -92,7 +90,6 @@ public class Test {
                 System.out.println("campo "+fieldType+" "+fieldName);
                 //si tiene un list
                 if(fieldType.equals("interface java.util.List")){
-                    System.out.println("List!!!");
                     String name = campo.getName();
                     Object value = campo.get(obj);
                     List<? extends DTO> subLst = (List) value;
