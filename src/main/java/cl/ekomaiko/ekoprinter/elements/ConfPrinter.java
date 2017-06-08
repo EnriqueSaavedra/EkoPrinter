@@ -65,36 +65,48 @@ public final class ConfPrinter {
 
         }
    
-        public ConfPrinterBuilder addTitle(String title, int position,DisplayTypes type,String...fieldName) throws ConfPrinterException{
-            if(fieldName.length == 0)
-                throw new ConfPrinterException("Titulo no entregado.");
-            
-            if(fieldName.length > 1){
-                MultiTitle titleObj = new MultiTitle(title, position,type, fieldName);
-                titles.add(titleObj);
-            }else{
-                SimpleTitle titleObj = new SimpleTitle(title, position,type, fieldName[0]);
-                titles.add(titleObj);
-            }
+        public ConfPrinterBuilder addTitle(MultiTitle multi) throws ConfPrinterException{
+            this.titles.add(multi);
             return this;
         }
-
-        public ConfPrinterBuilder addTitle(String title, int position,String...fieldName) throws ConfPrinterException{
-            if(fieldName.length == 0)
-                throw new ConfPrinterException("Titulo no entregado.");
-            
-            if(fieldName.length > 1){
-                MultiTitle titleObj = new MultiTitle(title, position, fieldName);
-                titles.add(titleObj);
-            }else{
-                SimpleTitle titleObj = new SimpleTitle(title, position, fieldName[0]);
-                titles.add(titleObj);
-            }
+        
+        public ConfPrinterBuilder addTitle(SimpleTitle simple) throws ConfPrinterException{
+            this.titles.add(simple);
             return this;
-//            EkoTitle titleObj = new SimpleTitle(title, position, fieldName);
-//            titles.add(titleObj);
+        }
+        
+        // necesario?
+//        public ConfPrinterBuilder addTitle(String title, int position,DisplayTypes type,char glue,String...fieldName) throws ConfPrinterException{
+//            if(fieldName.length == 0)
+//                throw new ConfPrinterException("Titulo no entregado.");
+//            
+//            if(fieldName.length > 1){
+//                MultiTitle titleObj = new MultiTitle(title, position,type,glue, fieldName);
+//                titles.add(titleObj);
+//            }else{
+//                SimpleTitle titleObj = new SimpleTitle(title, position,type, fieldName[0]);
+//                titles.add(titleObj);
+//            }
 //            return this;
-        }
+//        }
+
+        // necesario?
+//        public ConfPrinterBuilder addTitle(String title, int position,String...fieldName) throws ConfPrinterException{
+//            if(fieldName.length == 0)
+//                throw new ConfPrinterException("Titulo no entregado.");
+//            
+//            if(fieldName.length > 1){
+//                MultiTitle titleObj = new MultiTitle(title, position, fieldName);
+//                titles.add(titleObj);
+//            }else{
+//                SimpleTitle titleObj = new SimpleTitle(title, position, fieldName[0]);
+//                titles.add(titleObj);
+//            }
+//            return this;
+////            EkoTitle titleObj = new SimpleTitle(title, position, fieldName);
+////            titles.add(titleObj);
+////            return this;
+//        }
         
         public ConfPrinter build(){
             return new ConfPrinter(this);

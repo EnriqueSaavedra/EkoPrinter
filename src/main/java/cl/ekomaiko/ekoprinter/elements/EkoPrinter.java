@@ -6,6 +6,7 @@
 package cl.ekomaiko.ekoprinter.elements;
 
 import cl.ekomaiko.ekoprinter.enums.DisplayTypes;
+import cl.ekomaiko.ekoprinter.exceptions.ConfPrinterException;
 import cl.ekomaiko.ekoprinter.exceptions.DTOException;
 import cl.ekomaiko.ekoprinter.exceptions.EkoPrinterException;
 import cl.ekomaiko.ekoprinter.interfaces.DTO;
@@ -59,8 +60,9 @@ public final class EkoPrinter{
      * @param conf
      * @throws DTOException
      * @throws EkoPrinterException 
+     * @throws cl.ekomaiko.ekoprinter.exceptions.ConfPrinterException 
      */
-    public EkoPrinter(List<? extends DTO> lst, ConfPrinter conf) throws DTOException, EkoPrinterException{
+    public EkoPrinter(List<? extends DTO> lst, ConfPrinter conf) throws DTOException, EkoPrinterException, ConfPrinterException{
         //verifica que todos los datos que tengan los DTOs sean los aceptados
         this.verifyAllDTO(lst);
         this.verifyAllConfFieldsNames(lst,conf);
@@ -88,7 +90,7 @@ public final class EkoPrinter{
     
     private void searchMaximunCellSize(ConfPrinter conf,int nivel){
         int titleSize = conf.getTitles().size();
-        this.maxCellSize = (this.maxCellSize < titleSize) ? (titleSize+nivel) : this.maxCellSize;
+        this.maxCellSize = (this.maxCellSize < (titleSize+nivel)) ? (titleSize+nivel) : this.maxCellSize;
         if(conf.getSubConf() != null){
             this.searchMaximunCellSize(conf.getSubConf(),++nivel);
         }
@@ -140,7 +142,7 @@ public final class EkoPrinter{
             }
     }
     
-    private void verifyAllConfFieldsNames(List<? extends DTO> listDTO,ConfPrinter conf) throws EkoPrinterException{
+    private void verifyAllConfFieldsNames(List<? extends DTO> listDTO,ConfPrinter conf) throws EkoPrinterException, ConfPrinterException{
         try {
             if(listDTO.size() <= 0 )
                 throw new EkoPrinterException("La lista DTO es vacía");
@@ -148,6 +150,9 @@ public final class EkoPrinter{
             List<? extends EkoTitle> titles = conf.getTitles();
             Class claseDTO =  dto.getClass();
             for (EkoTitle title : titles) {
+                if(!title.validate())
+                    throw new ConfPrinterException("Un titulo multiple no ha sido bien configurado.");
+                
                 if(title instanceof SimpleTitle)
                     claseDTO.getField(((SimpleTitle)title).getFieldName());
                 else if(title instanceof MultiTitle){
@@ -163,6 +168,10 @@ public final class EkoPrinter{
         } catch(NoSuchFieldException e){
             System.out.println(e.getMessage());
             throw new EkoPrinterException("La configuracion de:  no existe"); 
+        } catch(ConfPrinterException e){
+            System.out.println(e.getMessage());
+            e.printStackTrace();
+            throw e;
         }catch (Exception e) {
             Class clase = listDTO.get(0).getClass();
             Field[] campos = clase.getFields();
@@ -242,25 +251,36 @@ public final class EkoPrinter{
             this.rellenarEspacios(table, this.maxCellSize, actualConf.totalCells);
             
             /**
-             * dtoTitle debería verificar si es de tipo simpletitle o multititle
-             * debería agregar un string de glue para pegar los fields,
-             * luego iterar y subiterar los fieldnames
-             * agregar que soporte formato de campos
              * agregar totalizador y subtotalizador
-             */
-            EkoTitle dtoTitle;        
+             */  
             Iterator titlePos = actualConf.getTitles().iterator();
             while(titlePos.hasNext()){
-                dtoTitle = (EkoTitle) titlePos.next();
-                Field field = dto.getClass().getField(dtoTitle.getFieldName());
-                if(dtoTitle instanceof SimpleTitle){
+                Object nextE = titlePos.next();
+                if(nextE instanceof SimpleTitle){
+                    SimpleTitle dtoTitle = (SimpleTitle) nextE;
+                    Field field = dto.getClass().getField(dtoTitle.getFieldName());
                     Object value = field.get(dto);
-                    PdfPCell cellCurrentField =new PdfPCell(new Paragraph(String.valueOf(value), fuenteDatos));
+                    PdfPCell cellCurrentField =new PdfPCell(new Paragraph(DisplayTypes.applyFormat(String.valueOf(value), dtoTitle.getType()), fuenteDatos));
+                    cellCurrentField.setHorizontalAlignment(Element.ALIGN_CENTER);
+                    cellCurrentField.setColspan(dtoTitle.mergerCells);
+                    table.addCell(cellCurrentField);
+                }else if(nextE instanceof MultiTitle){
+                    MultiTitle dtoTitle = (MultiTitle) nextE;
+                    StringBuilder fieldValue = new StringBuilder();
+                    for(String dtoField : dtoTitle.getFieldName()){
+                        Field field = dto.getClass().getField(dtoField);
+                        Object value = field.get(dto);
+                        fieldValue.append(DisplayTypes.applyFormat(String.valueOf(value), dtoTitle.getType()));
+                        if(!dtoField.equals(dtoTitle.getFieldName()[dtoTitle.getFieldName().length-1])){
+                            fieldValue.append(dtoTitle.getGlue());
+                        }
+                    }
+                    PdfPCell cellCurrentField = new PdfPCell(new Paragraph(fieldValue.toString(), fuenteDatos));
+                    cellCurrentField.setHorizontalAlignment(Element.ALIGN_CENTER);
+                    cellCurrentField.setColspan(dtoTitle.mergerCells);
+                    table.addCell(cellCurrentField);
+                    
                 }
-                
-                cellCurrentField.setHorizontalAlignment(Element.ALIGN_CENTER);
-                cellCurrentField.setColspan(dtoTitle.mergerCells);
-                table.addCell(cellCurrentField);
             }
             if(dto.getDTOList() != null && actualConf.getSubConf() != null){
                 iterateListConf(table, dto.getDTOList(), actualConf.getSubConf());

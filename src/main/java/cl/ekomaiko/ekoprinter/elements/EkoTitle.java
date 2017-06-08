@@ -18,6 +18,7 @@ public abstract class EkoTitle implements Comparable<EkoTitle>{
     public int mergerCells = 1;
     
     public abstract String toString();
+    public abstract boolean validate();
     
     EkoTitle(String title, int position){
         this.title = title;

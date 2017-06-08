@@ -8,6 +8,9 @@ package cl.ekomaiko.ekoprinter;
 import cl.ekomaiko.ekoprinter.elements.ConfPrinter;
 import cl.ekomaiko.ekoprinter.elements.EkoPrinter;
 import cl.ekomaiko.ekoprinter.elements.MultiTitle;
+import cl.ekomaiko.ekoprinter.elements.SimpleTitle;
+import cl.ekomaiko.ekoprinter.enums.DisplayTypes;
+import cl.ekomaiko.ekoprinter.exceptions.ConfPrinterException;
 import cl.ekomaiko.ekoprinter.exceptions.DTOException;
 import cl.ekomaiko.ekoprinter.exceptions.EkoPrinterException;
 import cl.ekomaiko.ekoprinter.interfaces.DTO;
@@ -40,14 +43,14 @@ public class Test {
             planilla.idMaquina = "idMaquina "+i;
             planilla.patenteMaquina = "patente: "+i;
             planilla.chofer = "chofer: "+i;
-            planilla.total = "Random: "+i;
+            planilla.total =  String.valueOf(Math.round(Math.random()*100_000));
             for (int j = 0; j < 5; j++) {
                 PlanillaDetalleDTO det = new PlanillaDetalleDTO();
                 det.fecha = DateTimeFormat.forPattern("dd/MM/yyyy").print(new DateTime());
                 det.empresario = "empresario "+j;
                 det.fechaSalida = DateTimeFormat.forPattern("dd/MM/yyyy").print(new DateTime());
                 det.noTrabajo = "numero Random "+j;
-                det.montoTotal = "monto Random "+j;
+                det.montoTotal = String.valueOf(Math.round(Math.random()*10_000));
                 det.planillasPagadasDia = "planillas "+j;
                 det.setTrabajo("trabajo "+j);
                 for(int k = 0; k < 3 ; k++){
@@ -55,15 +58,16 @@ public class Test {
                     subDet.subFecha = DateTimeFormat.forPattern("dd/MM/yyyy").print(new DateTime());
                     subDet.subNombre = "Rando nombre: "+k;
                     for(int l = 0; l < 5 ; l++){
+                        int dv = (int) Math.round(Math.random()*10);
                         SubSubDetalleDTO subSubDet = new SubSubDetalleDTO();
                         subSubDet.subSubSubNombre = "nombre "+l;
                         subSubDet.subSubSubArticulo = "articulo "+l;
-                        subSubDet.subSubSubBalance = "balance "+l;
-                        subSubDet.subSubSubBeneficio = "beneficio "+l;
+                        subSubDet.subSubSubBalance =  String.valueOf(Math.round(Math.random()*1_000));
+                        subSubDet.subSubSubBeneficio =  String.valueOf(Math.round(Math.random()*100));
                         subSubDet.subSubSubChofer = "chofer "+l;
-                        subSubDet.subSubSubDv = "digito "+l;
+                        subSubDet.subSubSubDv = String.valueOf((dv >= 10 ) ? "k" : dv);
                         subSubDet.subSubSubFecha =  DateTimeFormat.forPattern("dd/MM/yyyy").print(new DateTime());
-                        subSubDet.subSubSubRut = "rut "+l;
+                        subSubDet.subSubSubRut = String.valueOf(Math.round(Math.random()*100_000_000));
                         subSubDet.subSubSubRuta = "ruta "+l;
                         subDet.addSubSubDetalle(subSubDet);
                     }
@@ -83,35 +87,35 @@ public class Test {
         try {
             List<DiasTrabajadosPlanillasDTO> lst = simularDatos();
             ConfPrinter conf = new ConfPrinter.ConfPrinterBuilder()
-                    .addTitle("Máquina",["idMaquina",""], 0)
-                    .addTitle("Cupo Máquina", "cupoMaquina", 1)
-                    .addTitle("Patente Máquina", "patenteMaquina", 2)
-                    .addTitle("Conductor", "chofer", 3)
-                    .addTitle("Total", "total", 4)
+                    .addTitle(new MultiTitle("Máquina", 0).setFieldName("cupoMaquina","patenteMaquina").setGlue('/'))
+                    .addTitle(new SimpleTitle("Cupo Máquina", "cupoMaquina", 1))
+                    .addTitle(new SimpleTitle("Patente Máquina", "patenteMaquina", 2))
+                    .addTitle(new SimpleTitle("Conductor", "chofer", 3))
+                    .addTitle(new SimpleTitle("Total", "total", 4, DisplayTypes.MONEY_CL))
                     .build(
                         new ConfPrinter.ConfPrinterBuilder()
-                            .addTitle("Empresario", "empresario", 0)
-                            .addTitle("Fecha Salida", "fechaSalida", 1)
-                            .addTitle("No Trabajado", "noTrabajo", 2)
-                            .addTitle("Trabajo", "trabajo", 3)
-                            .addTitle("Fecha", "fecha", 4)
-                            .addTitle("Planillas/Dia", "planillasPagadasDia", 5)
-                            .addTitle("SubTotal", "montoTotal", 6)
+                            .addTitle(new SimpleTitle("Empresario", "empresario", 0))
+                            .addTitle(new SimpleTitle("Fecha Salida", "fechaSalida", 1))
+                            .addTitle(new SimpleTitle("No Trabajado", "noTrabajo", 2))
+                            .addTitle(new SimpleTitle("Trabajo", "trabajo", 3))
+                            .addTitle(new SimpleTitle("Fecha", "fecha", 4))
+                            .addTitle(new SimpleTitle("Planillas/Dia", "planillasPagadasDia", 5))
+                            .addTitle(new SimpleTitle("SubTotal", "montoTotal", 6, DisplayTypes.MONEY_CL))
                             .build(
                                 new ConfPrinter.ConfPrinterBuilder()
-                                    .addTitle("Fecha", "subFecha", 0)
-                                    .addTitle("Nombre", "subNombre", 1)
+                                    .addTitle(new SimpleTitle("Fecha", "subFecha", 0))
+                                    .addTitle(new SimpleTitle("Nombre", "subNombre", 1))
                                     .build(
                                         new ConfPrinter.ConfPrinterBuilder()
-                                            .addTitle("Nombre", "subSubSubNombre", 0)
-                                            .addTitle("Articulo", "subSubSubArticulo", 0)
-                                            .addTitle("Balance", "subSubSubBalance", 0)
-                                            .addTitle("Beneficio", "subSubSubBeneficio", 0)
-                                            .addTitle("Rut", "subSubSubRut", 0)
-                                            .addTitle("Dv", "subSubSubDv", 0)
-                                            .addTitle("Chofer", "subSubSubChofer", 0)
-                                            .addTitle("Fecha", "subSubSubFecha", 0)
-                                            .addTitle("Multa", "subSubSubMulta", 0)
+                                            .addTitle(new SimpleTitle("Nombre", "subSubSubNombre", 0))
+                                            .addTitle(new SimpleTitle("Articulo", "subSubSubArticulo", 0))
+                                            .addTitle(new SimpleTitle("Balance", "subSubSubBalance", 0, DisplayTypes.MONEY_CL))
+                                            .addTitle(new SimpleTitle("Beneficio", "subSubSubBeneficio", 0, DisplayTypes.MONEY_CL))
+                                            .addTitle(new MultiTitle("Rut", 0,DisplayTypes.THOUSAND).setFieldName("subSubSubRut","subSubSubDv").setGlue('-'))
+//                                            .addTitle(new SimpleTitle("Dv", 0))
+                                            .addTitle(new SimpleTitle("Chofer", "subSubSubChofer", 0))
+                                            .addTitle(new SimpleTitle("Fecha", "subSubSubFecha", 0))
+                                            .addTitle(new SimpleTitle("Multa", "subSubSubMulta", 0))
                                             .build()
                                     )
                             )
@@ -130,6 +134,9 @@ public class Test {
             System.out.println(ex.getMessage());
             ex.printStackTrace();
         } catch (IOException ex) {
+            System.out.println(ex.getMessage());
+            ex.printStackTrace();
+        } catch (ConfPrinterException ex) {
             System.out.println(ex.getMessage());
             ex.printStackTrace();
         }

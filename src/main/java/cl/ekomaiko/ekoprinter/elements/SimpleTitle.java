@@ -12,14 +12,14 @@ import cl.ekomaiko.ekoprinter.enums.DisplayTypes;
  * @author enrique
  */
 public class SimpleTitle extends EkoTitle{
-    private final String fieldName;
+    private String fieldName = null;
 
-    public SimpleTitle(String title, int position,String fieldName) {
+    public SimpleTitle(String title,String fieldName, int position) {
         super(title, position);
         this.fieldName = fieldName;
     }
 
-    public SimpleTitle(String title, int position,DisplayTypes type,String fieldName) {
+    public SimpleTitle(String title,String fieldName, int position,DisplayTypes type) {
         super(title, position,type);
         this.fieldName = fieldName;
     }
@@ -33,6 +33,15 @@ public class SimpleTitle extends EkoTitle{
         return "Title: "+super.getTitle() +
                "\n FieldName: "+fieldName+
                "\n Position: "+super.getPosition()+"\n";
+    }
+
+    @Override
+    public boolean validate() {
+        if(this.fieldName == null)
+            return false;
+        if(this.fieldName.trim().equals(""))
+            return false;
+        return true;
     }
     
 }

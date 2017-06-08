@@ -12,20 +12,29 @@ import cl.ekomaiko.ekoprinter.enums.DisplayTypes;
  * @author enrique
  */
 public class MultiTitle extends EkoTitle{
-    private final String[] fieldName;
+    private String[] fieldName = null;
+    private Character glue = null; 
 
-    public MultiTitle(String title, int position,String...fieldName) {
+    public MultiTitle(String title, int position) {
         super(title, position);
-        this.fieldName = fieldName;
     }
 
-    public MultiTitle(String title,int position,DisplayTypes type,String...fieldName) {
+    public MultiTitle(String title,int position,DisplayTypes type) {
         super(title, position,type);
-        this.fieldName = fieldName;
     }
     
-    public String[] getFieldName(){
-        return this.fieldName;
+    public MultiTitle setFieldName(String...fieldName){
+        if(this.fieldName == null)
+            this.fieldName = fieldName;
+        
+        return this;
+    }
+    
+    public MultiTitle setGlue(Character glue){
+        if(this.glue == null)
+            this.glue = glue;
+        
+        return this;
     }
 
     @Override
@@ -37,5 +46,22 @@ public class MultiTitle extends EkoTitle{
         }
         retorno.append("\n Position: "+super.getPosition()+"\n");
         return retorno.toString();
+    }
+    
+    @Override
+    public boolean validate(){
+        if(fieldName == null || fieldName.length <= 1)
+            return false;
+        if(glue == null || glue.equals(""))
+            return false;
+        return true;
+    }
+    
+    public String[] getFieldName(){
+        return this.fieldName;
+    }
+    
+    public Character getGlue(){
+        return this.glue;
     }
 }
