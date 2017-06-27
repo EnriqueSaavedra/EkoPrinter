@@ -36,6 +36,14 @@ public class MultiTitle extends EkoTitle{
         
         return this;
     }
+    
+    public String[] getFieldName(){
+        return this.fieldName;
+    }
+    
+    public Character getGlue(){
+        return this.glue;
+    }
 
     @Override
     public String toString() {
@@ -56,12 +64,13 @@ public class MultiTitle extends EkoTitle{
             return false;
         return true;
     }
-    
-    public String[] getFieldName(){
-        return this.fieldName;
-    }
-    
-    public Character getGlue(){
-        return this.glue;
+
+    @Override
+    public boolean validateTotalField(String field) {
+        for(String titleField : this.fieldName){
+            if(titleField.equalsIgnoreCase(field))
+                return true;
+        }
+        return false;
     }
 }

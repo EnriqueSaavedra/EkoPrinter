@@ -19,6 +19,7 @@ public abstract class EkoTitle implements Comparable<EkoTitle>{
     
     public abstract String toString();
     public abstract boolean validate();
+    public abstract boolean validateTotalField(String field);
     
     EkoTitle(String title, int position){
         this.title = title;

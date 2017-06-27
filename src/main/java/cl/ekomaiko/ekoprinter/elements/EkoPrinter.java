@@ -21,6 +21,7 @@ import com.itextpdf.text.Paragraph;
 import com.itextpdf.text.pdf.PdfPCell;
 import com.itextpdf.text.pdf.PdfPTable;
 import com.itextpdf.text.pdf.PdfWriter;
+import com.udojava.evalex.Expression;
 import java.io.ByteArrayOutputStream;
 import static java.lang.System.exit;
 import java.lang.reflect.Field;
@@ -37,6 +38,7 @@ import org.joda.time.format.DateTimeFormat;
  *    - HTML
  *    - PDF
  *    - EXCEL
+ *    - CHARTS ?
  * @author enrique
  * @param <T> cualquier objeto que implemente DTO
  */
@@ -68,25 +70,28 @@ public final class EkoPrinter{
         this.verifyAllConfFieldsNames(lst,conf);
         this.searchMaximunCellSize(conf,0);
         this.getTotalCells(conf,this.maxCellSize);
-        
         this.currentList = lst;
         this.currentConf = conf;
+        this.validateTotalize(this.currentConf);
         
+        Expression expresion = new Expression("1+1+1+1");
+        System.out.println(expresion.eval());
         
         /**
-         * 1- Recorrer DTO
-         * 2- Armar un objeto solo con los campos del DTO
-         * 3- Verificar que todos los fieldName de conf existan en DTO
-         *   3.1- Cuando encuentras un list<? extends DTO> debes bajar un nivel de conf tambien
-         * 4- Crear exceptions personalizadas para indicar los siguientes errores:
-         *   4.1- Cuando un campo conf no está en lst
-         *   4.2- Cuando un DTO no se puede recorrer con reflection (dado que sus campos son privados)
-         *   4.3- Cuando un campo lst no está en conf, simplemente debería dar un aviso minimo (Info)
-         *   4.4- pendientes.... 
+         * Pendientes...
+         * 1-hacer calculos para funciones
+         * 2-generador excel
+         * 3-generador html
+         * 4-generador charts
          */
-         
     }
     
+    private void validateTotalize(ConfPrinter conf) throws ConfPrinterException{
+        if(conf.getTotal() != null)
+            conf.validateTotalFields();
+        if(conf.getSubConf() != null)
+            this.validateTotalize(conf.getSubConf());
+    }
     
     private void searchMaximunCellSize(ConfPrinter conf,int nivel){
         int titleSize = conf.getTitles().size();
@@ -120,26 +125,26 @@ public final class EkoPrinter{
     }
     
     private void verifyAllDTO(List<? extends DTO> listDTO) throws DTOException, EkoPrinterException{
-            try{
-                for (DTO dto : listDTO) {
-                    if(!dto.verify())
-                        throw new EkoPrinterException("Uno de los dtos ha tenido un error al verificar");
-                    if(dto.getDTOList() != null){
-                        List<? extends DTO> subListDTO = dto.getDTOList();
-                        verifyAllDTO(subListDTO);
-                    }
-                } 
-            }catch(DTOException|EkoPrinterException e){
-                // lo mismo que el dto, lo importante es que sean diferentes para identificar de que tipo es el error
-                //quizas lanzar exception para afuera sería bueno
-                System.out.println(e.getMessage());
-                throw e;
-            }catch(Exception e){
-                e.printStackTrace();
-                //mandar todo a la mierda, este es error de programacion
-                System.out.println("Error: "+e.getMessage());
-                exit(0);
-            }
+        try{
+            for (DTO dto : listDTO) {
+                if(!dto.verify())
+                    throw new EkoPrinterException("Uno de los dtos ha tenido un error al verificar");
+                if(dto.getDTOList() != null){
+                    List<? extends DTO> subListDTO = dto.getDTOList();
+                    verifyAllDTO(subListDTO);
+                }
+            } 
+        }catch(DTOException|EkoPrinterException e){
+            // lo mismo que el dto, lo importante es que sean diferentes para identificar de que tipo es el error
+            //quizas lanzar exception para afuera sería bueno
+            System.out.println(e.getMessage());
+            throw e;
+        }catch(Exception e){
+            e.printStackTrace();
+            //mandar todo a la mierda, este es error de programacion
+            System.out.println("Error: "+e.getMessage());
+            exit(0);
+        }
     }
     
     private void verifyAllConfFieldsNames(List<? extends DTO> listDTO,ConfPrinter conf) throws EkoPrinterException, ConfPrinterException{
@@ -152,19 +157,17 @@ public final class EkoPrinter{
             for (EkoTitle title : titles) {
                 if(!title.validate())
                     throw new ConfPrinterException("Un titulo multiple no ha sido bien configurado.");
-                
-                if(title instanceof SimpleTitle)
+                if(title instanceof SimpleTitle){
                     claseDTO.getField(((SimpleTitle)title).getFieldName());
-                else if(title instanceof MultiTitle){
+                }else if(title instanceof MultiTitle){
                     MultiTitle multiTitle = (MultiTitle) title;
                     for(String field : multiTitle.getFieldName()){
                         claseDTO.getField(field);
                     }
                 }
             }
-            if(conf.getSubConf() != null){
+            if(conf.getSubConf() != null)
                 verifyAllConfFieldsNames(dto.getDTOList(),conf.getSubConf());
-            }
         } catch(NoSuchFieldException e){
             System.out.println(e.getMessage());
             throw new EkoPrinterException("La configuracion de:  no existe"); 
@@ -189,7 +192,6 @@ public final class EkoPrinter{
     public ByteArrayOutputStream toPDF(String docTitle){
         Document document = new Document();
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        
         try {
             String solicitud = "Solicitado el día: ";
             solicitud += DateTimeFormat.forPattern("dd/MM/yyyy HH:mm:ss").print(new DateTime());

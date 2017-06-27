@@ -43,5 +43,12 @@ public class SimpleTitle extends EkoTitle{
             return false;
         return true;
     }
+
+    @Override
+    public boolean validateTotalField(String field) {
+        return fieldName.equalsIgnoreCase(field);
+    }
+    
+    
     
 }

@@ -9,7 +9,6 @@ import cl.ekomaiko.ekoprinter.enums.DisplayTypes;
 import cl.ekomaiko.ekoprinter.exceptions.ConfPrinterException;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.LinkedList;
 import java.util.List;
 
 /**
@@ -21,10 +20,12 @@ public final class ConfPrinter {
     private final List<? extends EkoTitle> titles;
     int totalCells = 0;
     private final ConfPrinter subConf;
+    private EkoTotal total = null;
     
     private ConfPrinter(ConfPrinterBuilder builder){
         this.titles = builder.titles;
         this.subConf = builder.subConf;
+        this.total = builder.total;
         Collections.sort(titles);
     }
     
@@ -41,11 +42,31 @@ public final class ConfPrinter {
     }
 
     public List<? extends EkoTitle> getTitles() {
-        return titles;
+        return this.titles;
     }
 
     public ConfPrinter getSubConf() {
-        return subConf;
+        return this.subConf;
+    }
+    
+    public EkoTotal getTotal(){
+        return this.total;
+    }
+    
+    private boolean seachInTitles(String field){
+        for(EkoTitle title : titles){
+            if(title.validateTotalField(field))
+                return true;
+        }
+        return false;
+    }
+    
+    public boolean validateTotalFields() throws ConfPrinterException{
+        for(String totalField : total.getFields()){
+            if(!seachInTitles(totalField))
+                throw new ConfPrinterException("Campo: "+totalField+" no existe en configuracion.");
+        }
+        return true;
     }
     
     
@@ -59,10 +80,29 @@ public final class ConfPrinter {
         
         private List<EkoTitle> titles = new ArrayList<EkoTitle>();
         private ConfPrinter subConf;
+        private EkoTotal total = null;
         
     
         public void ConfPrinterBuilder(){
 
+        }
+        
+        public ConfPrinterBuilder generateTotal(String title,String[] campos, String formula) throws ConfPrinterException{
+            if(total != null){
+                throw new ConfPrinterException("Solo puedes definir un total.");
+            }else{
+                this.total = new EkoTotal(title, campos, formula);
+                return this;
+            }
+        }
+        
+        public ConfPrinterBuilder generateTotal(String title,String[] campos, String formula,DisplayTypes type) throws ConfPrinterException{
+            if(total != null){
+                throw new ConfPrinterException("Solo puedes definir un total.");
+            }else{
+                this.total = new EkoTotal(title, campos, formula,type);
+                return this;
+            }
         }
    
         public ConfPrinterBuilder addTitle(MultiTitle multi) throws ConfPrinterException{

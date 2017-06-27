@@ -25,8 +25,6 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormat;
 
@@ -34,7 +32,9 @@ import org.joda.time.format.DateTimeFormat;
  *
  * @author enrique
  */
-public class Test {    
+public class Test { 
+    
+    
     public static List<DiasTrabajadosPlanillasDTO> simularDatos(){
         List<DiasTrabajadosPlanillasDTO> lst = new ArrayList<>();
         for (int i = 0; i < 4; i++) {
@@ -92,6 +92,7 @@ public class Test {
                     .addTitle(new SimpleTitle("Patente Máquina", "patenteMaquina", 2))
                     .addTitle(new SimpleTitle("Conductor", "chofer", 3))
                     .addTitle(new SimpleTitle("Total", "total", 4, DisplayTypes.MONEY_CL))
+                    .generateTotal("Total final", new String[]{"total"}, "", DisplayTypes.MONEY_CL)
                     .build(
                         new ConfPrinter.ConfPrinterBuilder()
                             .addTitle(new SimpleTitle("Empresario", "empresario", 0))
