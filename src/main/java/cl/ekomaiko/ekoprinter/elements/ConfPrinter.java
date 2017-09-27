@@ -96,6 +96,15 @@ public final class ConfPrinter {
             }
         }
         
+        /**
+         * Genera totalizador
+         * @param title
+         * @param campos
+         * @param formula
+         * @param type
+         * @return
+         * @throws ConfPrinterException 
+         */
         public ConfPrinterBuilder generateTotal(String title,String[] campos, String formula,DisplayTypes type) throws ConfPrinterException{
             if(total != null){
                 throw new ConfPrinterException("Solo puedes definir un total.");
@@ -105,15 +114,15 @@ public final class ConfPrinter {
             }
         }
    
-        public ConfPrinterBuilder addTitle(MultiTitle multi) throws ConfPrinterException{
+        public ConfPrinterBuilder addTitle(EkoTitle multi) throws ConfPrinterException{
             this.titles.add(multi);
             return this;
         }
         
-        public ConfPrinterBuilder addTitle(SimpleTitle simple) throws ConfPrinterException{
-            this.titles.add(simple);
-            return this;
-        }
+//        public ConfPrinterBuilder addTitle(SimpleTitle simple) throws ConfPrinterException{
+//            this.titles.add(simple);
+//            return this;
+//        }
         
         // necesario?
 //        public ConfPrinterBuilder addTitle(String title, int position,DisplayTypes type,char glue,String...fieldName) throws ConfPrinterException{

@@ -23,12 +23,21 @@ import com.itextpdf.text.pdf.PdfPTable;
 import com.itextpdf.text.pdf.PdfWriter;
 import com.udojava.evalex.Expression;
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import static java.lang.System.exit;
 import java.lang.reflect.Field;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.apache.poi.hssf.usermodel.HSSFWorkbook;
+import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.CellStyle;
+import org.apache.poi.ss.usermodel.PrintSetup;
+import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.ss.usermodel.Sheet;
+import org.apache.poi.ss.usermodel.Workbook;
 import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormat;
 
@@ -77,9 +86,12 @@ public final class EkoPrinter{
         Expression expresion = new Expression("1+1+1+1");
         System.out.println(expresion.eval());
         
+        
         /**
          * Pendientes...
          * 1-hacer calculos para funciones
+         * 
+         * 
          * 2-generador excel
          * 3-generador html
          * 4-generador charts
@@ -91,6 +103,12 @@ public final class EkoPrinter{
             conf.validateTotalFields();
         if(conf.getSubConf() != null)
             this.validateTotalize(conf.getSubConf());
+    }
+    
+    public void generateTotalize(){
+        
+        
+        
     }
     
     private void searchMaximunCellSize(ConfPrinter conf,int nivel){
@@ -232,6 +250,129 @@ public final class EkoPrinter{
             Logger.getLogger(EkoPrinter.class.getName()).log(Level.SEVERE, null, ex);
             return null;
         }
+    }
+    
+    /**
+     * motor excel
+     */
+    public ByteArrayOutputStream toExcel(String docTitle){
+        Workbook wb = new HSSFWorkbook();
+        WorkbookStyles wbStyles = new WorkbookStyles();
+        Map<String,CellStyle> styles = wbStyles.createStyles(wb);
+        Sheet sheet = wb.createSheet("Nombre Hoja");
+
+        //turn off gridlines and print settings
+        sheet.setDisplayGridlines(false);
+        sheet.setPrintGridlines(false);
+        sheet.setFitToPage(true);
+        sheet.setHorizontallyCenter(true);
+
+        //the header row: centered text in 48pt font
+        Row headerRow = sheet.createRow(0); //el parametro es el numero de fila comenzando desde cero
+        headerRow.setHeightInPoints(12.75f);
+        
+//       IMPRIMIR ENCABEZADO
+//        $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+            Row row;
+            int rownum = 0;
+            int cellnum = 0;
+            String [] encabezado = {"Nombre Ruta","Código Ruta", "Fecha Despacho", "Numero Bus", "Porcentaje Marcación"};
+            row = sheet.createRow(rownum);
+            for(int i=0; i< encabezado.length;i++)
+            {
+                Cell cell = row.createCell(cellnum);
+                cell.setCellValue(encabezado[i]);
+                cell.setCellStyle(styles.get("header"));
+                cellnum++;
+            }
+            rownum++;
+
+//            ####################################Bean del excel##################################
+               cellnum =0;
+               row = sheet.createRow(rownum++);
+//               for(int k=0;k<listadoRecorridosNoRealizados.size();k++)
+//               {
+//
+//                    Cell cell = row.createCell(cellnum);
+//                    cell.setCellValue(listadoRecorridosNoRealizados.get(k).getNombreRuta());
+//                    cell.setCellStyle(styles.get("data"));
+//                    cellnum++;
+//
+//                   cell = row.createCell(cellnum);
+//                   cell.setCellValue(listadoRecorridosNoRealizados.get(k).getCodigoRuta());
+//                   cell.setCellStyle(styles.get("data"));
+//                   cellnum++;
+//
+//                   cell = row.createCell(cellnum);
+//                   cell.setCellValue(listadoRecorridosNoRealizados.get(k).getFechaDespacho());
+//                   cell.setCellStyle(styles.get("data"));
+//                   cellnum++;
+//
+//                   cell = row.createCell(cellnum);
+//                   cell.setCellValue(listadoRecorridosNoRealizados.get(k).getNumeroBus());
+//                   cell.setCellStyle(styles.get("data"));
+//                   cellnum++;
+//
+//                   cell = row.createCell(cellnum);
+//                   cell.setCellValue(listadoRecorridosNoRealizados.get(k).getPorcentajeMarcacion());
+//                   cell.setCellStyle(styles.get("data"));
+//                   cellnum++;
+//
+//                   row = sheet.createRow(rownum++);
+//                   cellnum =0;
+//               }
+//
+//        $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+
+        //PROPIEDADES DE LA HOJA
+        // ######## opciones de impresion #######
+        PrintSetup printSetup = sheet.getPrintSetup();
+        printSetup.setLandscape(true);
+
+//      //the following three statements are required only for HSSF
+//        sheet.setAutobreaks(true);
+////        sheet2.setAutobreaks(true);
+//        printSetup.setFitHeight((short)9999);
+//        printSetup.setFitWidth((short)1);
+//        printSetup2.setFitHeight((short)9999);
+//        printSetup2.setFitHeight((short)1);
+//         ####################################
+
+        //Setup the Page Print margins - Left, Right, Top and Bottom
+        sheet.setMargin(Sheet.LeftMargin, 0.25);
+        sheet.setMargin(Sheet.RightMargin, 0.25);
+        sheet.setMargin(Sheet.TopMargin, 0.75);
+        sheet.setMargin(Sheet.BottomMargin, 0.75);
+        //freeze the first row
+//        sheet.createFreezePane(0, 2);
+
+// //aumentar el alto de la celda
+//        headerRow.setHeightInPoints(15);
+//        //set column widths, the width is measured in units of 1/256th of a character width
+//        sheet.setColumnWidth(0, 256*13);
+//        for (int i = 1; i < 32; i++)
+//        {
+//           sheet.setColumnWidth(i, 256*4);
+//        }
+//        sheet.setColumnWidth(32, 256*48);
+//        sheet2.setColumnWidth(0, 256*48);
+//        sheet.setZoom(4, 4); // zoom en fraccion
+        sheet.setColumnWidth(0,256*30);
+        sheet.setColumnWidth(1,256*20);
+        sheet.setColumnWidth(2,256*20);
+        sheet.setColumnWidth(3,256*20);
+        sheet.setColumnWidth(4,256*20);
+        
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        try {
+            wb.write(baos);
+        } catch (IOException ex) {
+            System.out.println(ex.getMessage());
+            ex.printStackTrace();
+            Logger.getLogger(EkoPrinter.class.getName()).log(Level.SEVERE, null, ex);
+            return null;
+        }
+        return baos;
     }
     
     private void mergeCellsByTitleCapacity(){

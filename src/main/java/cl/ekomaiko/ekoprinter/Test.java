@@ -92,7 +92,7 @@ public class Test {
                     .addTitle(new SimpleTitle("Patente Máquina", "patenteMaquina", 2))
                     .addTitle(new SimpleTitle("Conductor", "chofer", 3))
                     .addTitle(new SimpleTitle("Total", "total", 4, DisplayTypes.MONEY_CL))
-                    .generateTotal("Total final", new String[]{"total"}, "", DisplayTypes.MONEY_CL)
+                    .generateTotal("Total final", new String[]{"total"}, "val1 * 2", DisplayTypes.MONEY_CL)
                     .build(
                         new ConfPrinter.ConfPrinterBuilder()
                             .addTitle(new SimpleTitle("Empresario", "empresario", 0))
