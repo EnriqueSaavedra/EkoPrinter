@@ -18,8 +18,8 @@ import java.util.List;
  */
 public class PlanillaDetalleDTO implements DTO{
 
-    public static final String TRABAJADO = "1";
-    public static final String NO_TRABAJADO = "0";
+    private final String TRABAJADO = "1";
+    private final String NO_TRABAJADO = "0";
 
     public String fecha;
     public String trabajo;

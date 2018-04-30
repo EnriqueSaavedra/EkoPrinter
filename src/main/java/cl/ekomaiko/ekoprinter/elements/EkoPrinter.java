@@ -49,7 +49,8 @@ import org.joda.time.format.DateTimeFormat;
  *    - EXCEL
  *    - CHARTS ?
  * @author enrique
- * @param <T> cualquier objeto que implemente DTO
+ * 
+ * EKOPRINTER es el motor que implime
  */
 public final class EkoPrinter{
     
@@ -98,6 +99,13 @@ public final class EkoPrinter{
          */
     }
     
+    /**
+     * Valida que los campos de total existan en las tablas y que tengan una
+     * configuracion valida
+     * se ejecuta de forma recursiva hasta que no existas mas subConfiguraciones
+     * @param conf
+     * @throws ConfPrinterException 
+     */
     private void validateTotalize(ConfPrinter conf) throws ConfPrinterException{
         if(conf.getTotal() != null)
             conf.validateTotalFields();
@@ -111,6 +119,16 @@ public final class EkoPrinter{
         
     }
     
+    /**
+     * Obtiene la cantidad maxima de campos para una configuracion para luego agrupar
+     * ejemplo
+     *  Conf 2 campos
+     *      SubConf 4 campos
+     *          searchMaximunCellSize = 4
+     * 
+     * @param conf
+     * @param nivel 
+     */
     private void searchMaximunCellSize(ConfPrinter conf,int nivel){
         int titleSize = conf.getTitles().size();
         this.maxCellSize = (this.maxCellSize < (titleSize+nivel)) ? (titleSize+nivel) : this.maxCellSize;
@@ -119,7 +137,11 @@ public final class EkoPrinter{
         }
     }
     
-    //se deberia llamar conf
+    /**
+     * Configura las celdas que se van a mergear por cada piso de conf
+     * @param conf
+     * @param maxCell 
+     */
     private void getTotalCells(ConfPrinter conf, int maxCell){
         int titleSize = conf.getTitles().size();
         int merge = maxCell / titleSize;
@@ -142,6 +164,13 @@ public final class EkoPrinter{
         }
     }
     
+    /**
+     * Verifica todos los campos que se van a usar en la tabla usando el metodo
+     * definido en DTO y sus subs DTOs
+     * @param listDTO cualquier listado que implemente DTO
+     * @throws DTOException
+     * @throws EkoPrinterException 
+     */
     private void verifyAllDTO(List<? extends DTO> listDTO) throws DTOException, EkoPrinterException{
         try{
             for (DTO dto : listDTO) {
@@ -165,16 +194,23 @@ public final class EkoPrinter{
         }
     }
     
+    /**
+     * Verifica que cada campo a usar tenga su configuración y esta esté bien hecha
+     * @param listDTO cualquier listado que implemente DTO
+     * @param conf
+     * @throws EkoPrinterException
+     * @throws ConfPrinterException 
+     */
     private void verifyAllConfFieldsNames(List<? extends DTO> listDTO,ConfPrinter conf) throws EkoPrinterException, ConfPrinterException{
         try {
-            if(listDTO.size() <= 0 )
+            if(listDTO.isEmpty())
                 throw new EkoPrinterException("La lista DTO es vacía");
             DTO dto = listDTO.get(0);
             List<? extends EkoTitle> titles = conf.getTitles();
             Class claseDTO =  dto.getClass();
             for (EkoTitle title : titles) {
                 if(!title.validate())
-                    throw new ConfPrinterException("Un titulo multiple no ha sido bien configurado.");
+                    throw new ConfPrinterException("Un titulo no ha sido bien configurado.");
                 if(title instanceof SimpleTitle){
                     claseDTO.getField(((SimpleTitle)title).getFieldName());
                 }else if(title instanceof MultiTitle){
@@ -380,22 +416,17 @@ public final class EkoPrinter{
     }
     
     private void iterateListConf(PdfPTable table, List<? extends DTO> actualList, ConfPrinter actualConf) throws NoSuchFieldException, IllegalArgumentException, IllegalArgumentException, IllegalAccessException{
-        
         this.rellenarEspacios(table, this.maxCellSize, actualConf.totalCells);
+        boolean hasTotal = (actualConf.getTotal() == null);
         for (EkoTitle title : actualConf.getTitles()) {
             PdfPCell cell = new PdfPCell((new Paragraph(title.getTitle(),fuenteDatos)));
             cell.setBackgroundColor(BaseColor.LIGHT_GRAY);
             cell.setHorizontalAlignment(Element.ALIGN_CENTER);
-            //rellenar con nulos
             cell.setColspan(title.mergerCells);
             table.addCell(cell);
         }
         for (DTO dto : actualList) {
             this.rellenarEspacios(table, this.maxCellSize, actualConf.totalCells);
-            
-            /**
-             * agregar totalizador y subtotalizador
-             */  
             Iterator titlePos = actualConf.getTitles().iterator();
             while(titlePos.hasNext()){
                 Object nextE = titlePos.next();
@@ -438,6 +469,10 @@ public final class EkoPrinter{
                     }
                 }
             }
+        }
+        if(hasTotal){
+            //pintar totalizador
+            actualConf.getTotal().getFormula();
         }
     }
     

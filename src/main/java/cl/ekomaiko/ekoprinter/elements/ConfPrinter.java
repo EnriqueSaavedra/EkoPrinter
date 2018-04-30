@@ -87,7 +87,32 @@ public final class ConfPrinter {
 
         }
         
+        private EkoTitle searchInTitles(String titleText){
+            for (EkoTitle title : titles) {
+                if(title instanceof SimpleTitle){
+                    if(title.getTitle().equals(titleText))
+                        return title;
+                }else{
+                    for (String textTitle : ((MultiTitle) title).getFieldName()) {
+                        if(textTitle.equals(titleText)){
+                            return title;
+                        }
+                    }
+                }
+            }
+            return null;
+        }
+        
+        /**
+         * Genera totalizador el tipo de dato se asumirá numerico
+         * @param title Titulo del totalizador
+         * @param campos Arreglo de los campos, debe coincidir con la formula
+         * @param formula Ejemplo "Var1 + Var2"
+         * @return
+         * @throws ConfPrinterException 
+         */
         public ConfPrinterBuilder generateTotal(String title,String[] campos, String formula) throws ConfPrinterException{
+            if(searchInTitles)
             if(total != null){
                 throw new ConfPrinterException("Solo puedes definir un total.");
             }else{
@@ -98,10 +123,10 @@ public final class ConfPrinter {
         
         /**
          * Genera totalizador
-         * @param title
-         * @param campos
-         * @param formula
-         * @param type
+         * @param title Titulo del totalizador
+         * @param campos Arreglo de los campos, debe coincidir con la formula
+         * @param formula Ejemplo "Var1 + Var2"
+         * @param type formato que debe tener
          * @return
          * @throws ConfPrinterException 
          */

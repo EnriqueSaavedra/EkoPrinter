@@ -22,6 +22,13 @@ public interface DTO {
      * @throws DTOException 
      */
     boolean verify() throws DTOException;
+    
+    /**
+     * verifica que todos los tipos de datos de los campos agregados al despliege 
+     * sean reconocidos por la aplciacion usando el enum AllowedTypes
+     * @param elemento
+     * @return 
+     */
     default boolean allowedType(Object elemento){
         boolean result = false;
         if(elemento == null)
@@ -31,5 +38,10 @@ public interface DTO {
         return result;
     }
     
+    /**
+     * se usa para que el objeto que implemente DTO entrege a su subelemento para
+     * el motor
+     * @return 
+     */
     List<? extends DTO> getDTOList();
 }

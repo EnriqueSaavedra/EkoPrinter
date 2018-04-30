@@ -11,7 +11,7 @@ import com.sun.org.apache.xalan.internal.utils.ConfigurationError;
 import java.util.regex.Pattern;
 
 /**
- *
+ *  
  * @author enrique
  */
 public class EkoTotal {
@@ -19,7 +19,14 @@ public class EkoTotal {
     private final String[] fields;
     private final String formula;
     private DisplayTypes type;
-
+    
+    /**
+     * La validación queda en este constructor, para que siempre se ejecute
+     * @param title
+     * @param fields
+     * @param formula
+     * @throws ConfPrinterException 
+     */
     public EkoTotal(String title,String[] fields, String formula) throws ConfPrinterException {
         this.title = title;
         this.formula = formula;
@@ -48,6 +55,11 @@ public class EkoTotal {
         return fields;
     }
     
+    /**
+     * Verificamos que la cantidad de datos entregadas en el arreglo sea correcta 
+     * con las que se entregan en la ecuacion ej: fields = {"Camp1","Camp2"} formula = "val1 + val2"
+     * @throws ConfPrinterException 
+     */
     private void validateTotal() throws ConfPrinterException{
         String fieldName = "val";
         int totalField = 0;
@@ -55,17 +67,14 @@ public class EkoTotal {
             throw new ConfPrinterException("no puedes crear un totalizador sin campos");
         if(this.formula.equals("") || this.formula.length() == 0)
             throw new ConfPrinterException("La formula debe tener datos");
+        if(!this.formula.matches("(val)[0-9]+"))
+            throw new ConfPrinterException("La formula debe usar valores.");
+        
+        //validar que todos los campos sean instancias de SimpleTitle
         for (int i = 0; i < fields.length; i++) {
             if(!this.formula.contains(fieldName.concat(String.valueOf(i + 1))))
-                throw new ConfPrinterException("El campo: "+fields[i]+" no es usado  en la formula.");           
-        }
-        String[] camposFormula = "val1 + val2 +val3".split("(val)[0-9]+");
-//        while(this.formula.indexOf(Pattern.compile("(?<!a)bc"), "abc xbc") > -1){
-//            
-//        }
-
-        
-        
+                throw new ConfPrinterException("El campo: "+fields[i]+" no es usado en la formula.");           
+        }        
     }
     
     

@@ -125,7 +125,7 @@ public class Test {
             EkoPrinter printer = new EkoPrinter(lst, conf);
             ByteArrayOutputStream baos = printer.toPDF("Este es un doc de prueba");
             baos.writeTo(new FileOutputStream("/home/enrique/testPdf.pdf"));
-            List<? extends Number> lista = new ArrayList<Integer>();
+            List<? extends Number> lista = new ArrayList<>();
             
 //        getListData();
         } catch (DTOException ex) {
